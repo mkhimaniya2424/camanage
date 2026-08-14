@@ -272,7 +272,7 @@ class _FirmSettingsScreenState extends State<FirmSettingsScreen> {
     final profile = _profile!;
     if (!RoleGuard.isAllowed(
         profile.role, const [UserRole.ca, UserRole.superAdmin])) {
-      return PermissionDeniedView();
+      return const PermissionDeniedView();
     }
 
     if (_firm == null) {
@@ -332,8 +332,8 @@ class _FirmSettingsScreenState extends State<FirmSettingsScreen> {
           _buildPlanBadge(),
           const SizedBox(height: 20),
           // Firm details form
-          GlassCard(
-            padding: const EdgeInsets.all(20),
+          AppCard(
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Form(
               key: _formKey,
               child: Column(
@@ -382,8 +382,8 @@ class _FirmSettingsScreenState extends State<FirmSettingsScreen> {
           ),
           const SizedBox(height: 16),
           // Address section
-          GlassCard(
-            padding: const EdgeInsets.all(20),
+          AppCard(
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

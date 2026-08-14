@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../config/app_theme.dart';
 
 import '../../models/profile.dart';
 
@@ -32,10 +31,9 @@ class RoleGuard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     if (allow.contains(role)) return child;
     if (fallback != null) return fallback!;
-    if (showDeniedMessage) return PermissionDeniedView();
+    if (showDeniedMessage) return const PermissionDeniedView();
     return const SizedBox.shrink();
   }
 }
@@ -44,13 +42,12 @@ class RoleGuard extends StatelessWidget {
 /// role-restricted screen is reached directly (e.g. deep link, stale
 /// nav state) rather than hidden via a nav entry.
 class PermissionDeniedView extends StatelessWidget {
-  PermissionDeniedView({super.key});
+  const PermissionDeniedView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     return Scaffold(
-      appBar: AppBar(title: Text('Access Restricted')),
+      appBar: AppBar(title: const Text('Access Restricted')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),

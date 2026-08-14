@@ -3,13 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'core/config/app_theme.dart';
 import 'core/config/theme_controller.dart';
+import 'core/router/app_router.dart';
 import 'core/services/supabase_service.dart';
-import 'features/auth/splash_screen.dart';
-import 'features/dashboard/dashboard_placeholder_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,27 +47,10 @@ class CADeskApp extends StatefulWidget {
 }
 
 class _CADeskAppState extends State<CADeskApp> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
-
-  @override
-  void initState() {
-    super.initState();
-    // Listen to Supabase auth events (e.g. email confirmed via deep link)
-    if (widget.initError == null) {
-      SupabaseService.client.auth.onAuthStateChange.listen((data) {
-        final event = data.event;
-        if (event == AuthChangeEvent.signedIn ||
-            event == AuthChangeEvent.userUpdated) {
-          _navigatorKey.currentState?.pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => const DashboardPlaceholderScreen(),
-            ),
-            (route) => false,
-          );
-        }
-      });
-    }
-  }
+  // Auth-driven navigation (e.g. redirecting to Dashboard on sign-in) is
+  // now centralized in AppRouter's `redirect`, which re-evaluates on
+  // every auth state change via GoRouterRefreshStream. No manual listener
+  // or navigatorKey needed here anymore.
 
   @override
   Widget build(BuildContext context) {
@@ -93,16 +73,27 @@ class _CADeskAppState extends State<CADeskApp> {
           textTheme: GoogleFonts.interTextTheme(AppTheme.light.textTheme),
         );
 
-        return MaterialApp(
+        // If Supabase failed to initialize, short-circuit before GoRouter
+        // ever touches AuthService (which itself talks to Supabase) —
+        // same guard the old `home:` ternary provided.
+        if (widget.initError != null) {
+          return MaterialApp(
+            title: 'CA Desk',
+            debugShowCheckedModeBanner: false,
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: ThemeController.instance.themeMode,
+            home: _SupabaseConnectionErrorScreen(error: widget.initError!),
+          );
+        }
+
+        return MaterialApp.router(
           title: 'CA Desk',
           debugShowCheckedModeBanner: false,
-          navigatorKey: _navigatorKey,
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: ThemeController.instance.themeMode,
-          home: widget.initError != null
-              ? _SupabaseConnectionErrorScreen(error: widget.initError!)
-              : const SplashScreen(),
+          routerConfig: AppRouter.router,
         );
       },
     );

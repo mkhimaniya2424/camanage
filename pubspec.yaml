@@ -14,6 +14,9 @@ dependencies:
   # Backend / cloud
   supabase_flutter: ^2.8.0
 
+  # Centralized routing
+  go_router: ^14.6.2
+
   # Environment configuration
   flutter_dotenv: ^5.2.1
 

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/config/app_theme.dart';
 import '../../core/config/theme_controller.dart';
+import '../../core/router/app_routes.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../models/profile.dart';
 import '../auth/auth_service.dart';
-import '../auth/login_screen.dart';
-import '../profile/profile_screen.dart';
 
 /// Temporary post-login landing screen. Confirms auth end-to-end (shows
 /// the signed-in user's email + role) until the real dashboard is built
@@ -56,15 +56,10 @@ class _DashboardPlaceholderScreenState
   Future<void> _signOut() async {
     await AuthService.instance.signOut();
     if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const LoginScreen(),
-        transitionsBuilder: (_, a, __, c) =>
-            FadeTransition(opacity: a, child: c),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-      (route) => false,
-    );
+    // The router's redirect also reacts to this sign-out automatically
+    // (see AppRouter), but we navigate explicitly too so the UI moves
+    // immediately rather than waiting on the auth-stream round trip.
+    context.go(AppRoutes.login);
   }
 
   @override
@@ -72,6 +67,7 @@ class _DashboardPlaceholderScreenState
     final colors = context.appColors;
     return Scaffold(
       backgroundColor: colors.bg1,
+      extendBody: true,
       body: Column(
         children: [
           _buildTopBar(),
@@ -88,19 +84,17 @@ class _DashboardPlaceholderScreenState
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(bottom: 24, left: 16, right: 16),
+        child: _buildBottomNav(),
+      ),
     );
   }
 
   Widget _buildTopBar() {
     final colors = context.appColors;
     return Container(
-      decoration: BoxDecoration(
-        color: colors.bg1,
-        border: Border(
-          bottom: BorderSide(color: colors.glassBorderDim),
-        ),
-      ),
+      color: colors.bg1,
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -109,34 +103,26 @@ class _DashboardPlaceholderScreenState
             children: [
               // Logo
               Container(
-                width: 36,
-                height: 36,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [colors.primaryDark, colors.primary],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: colors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Icon(
                   Icons.account_balance_rounded,
                   size: 18,
-                  color: Colors.white,
+                  color: colors.primary,
                 ),
               ),
               const SizedBox(width: 10),
-              ShaderMask(
-                shaderCallback: (bounds) => LinearGradient(
-                  colors: [colors.primary, colors.tertiary],
-                ).createShader(bounds),
-                child: Text(
-                  'CA Desk',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
+              Text(
+                'CA Desk',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: colors.textPrimary,
+                  letterSpacing: -0.5,
                 ),
               ),
               const Spacer(),
@@ -176,15 +162,13 @@ class _DashboardPlaceholderScreenState
               const SizedBox(width: 10),
               // Profile avatar
               GestureDetector(
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                ),
+                onTap: () => context.push(AppRoutes.profile),
                 child: Container(
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [colors.primaryDark, colors.tertiary],
+                      colors: [colors.primary, colors.secondary],
                     ),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
@@ -223,17 +207,29 @@ class _DashboardPlaceholderScreenState
       backgroundColor: colors.bg2,
       onRefresh: _loadProfile,
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: 120, // Avoid bottom nav overlap
+        ),
         children: [
           // Welcome header
           _buildWelcomeCard(email, role),
-          const SizedBox(height: 20),
+          const SizedBox(height: 32),
+          // Quick actions
+          _buildQuickActions(),
+          const SizedBox(height: 32),
           // Stat cards grid
+          const AppSectionHeader(title: 'Overview'),
+          const SizedBox(height: 16),
           _buildStatGrid(),
-          const SizedBox(height: 20),
+          const SizedBox(height: 32),
           // Coming soon modules
+          const AppSectionHeader(title: 'Available Modules'),
+          const SizedBox(height: 16),
           _buildModulesPreview(),
-          const SizedBox(height: 20),
+          const SizedBox(height: 48),
           // Sign out
           OutlinedButton.icon(
             onPressed: _signOut,
@@ -269,65 +265,76 @@ class _DashboardPlaceholderScreenState
         ? _profile!.fullName!.split(' ').first
         : email.split('@').first;
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF1E1B4B), Color(0xFF1A2233)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                '$greeting,',
+                style: TextStyle(
+                  color: colors.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            AppBadge(
+              label: _roleLabel(role),
+              color: colors.primary,
+            ),
+          ],
         ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: colors.glassBorder),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 24, offset: const Offset(0, 8))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$greeting,',
-                      style: TextStyle(color: colors.textSecondary,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      name,
-                      style: TextStyle(color: colors.textPrimary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              AppBadge(
-                label: _roleLabel(role),
-                color: _roleColor(role),
-              ),
-            ],
+        const SizedBox(height: 4),
+        Text(
+          name,
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
           ),
-          const SizedBox(height: 16),
-          Divider(color: colors.glassBorderDim),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Icon(Icons.info, color: colors.secondary,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(Icons.email_outlined, color: colors.textMuted, size: 14),
+            const SizedBox(width: 6),
+            Text(
+              email,
+              style: TextStyle(
+                color: colors.textMuted,
+                fontSize: 13,
               ),
-              const SizedBox(width: 6),
-              Text(
-                email,
-                style: TextStyle(color: colors.textSecondary,
-                  fontSize: 13,
-                ),
-              ),
-            ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      clipBehavior: Clip.none,
+      child: Row(
+        children: [
+          AppQuickAction(
+            icon: Icons.person_add_rounded,
+            label: 'Add Client',
+            onTap: () {},
+          ),
+          const SizedBox(width: 12),
+          AppQuickAction(
+            icon: Icons.add_task_rounded,
+            label: 'New Task',
+            onTap: () {},
+          ),
+          const SizedBox(width: 12),
+          AppQuickAction(
+            icon: Icons.request_quote_rounded,
+            label: 'New Invoice',
+            onTap: () {},
           ),
         ],
       ),
@@ -365,111 +372,66 @@ class _DashboardPlaceholderScreenState
 
     return GridView.count(
       crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.6,
-      children: stats.map((s) => _buildStatCard(s)).toList(),
-    );
-  }
-
-  Widget _buildStatCard(_StatItem stat) {
-    final colors = context.appColors;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.bg2,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.glassBorderDim),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: stat.color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-            ),
-            child: Icon(stat.icon, color: stat.color, size: 16),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                stat.value,
-                style: TextStyle(color: colors.textPrimary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                stat.label,
-                style: TextStyle(color: colors.textMuted,
-                  fontSize: 11,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+      childAspectRatio: 1.3,
+      children: stats
+          .map((s) => AppStatCard(
+                label: s.label,
+                value: s.value,
+                icon: s.icon,
+                color: s.color,
+              ))
+          .toList(),
     );
   }
 
   Widget _buildModulesPreview() {
     final colors = context.appColors;
-    return GlassCard(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 6,
-                height: 6,
+    final modules = [
+      ('Clients', Icons.people_alt_rounded),
+      ('Tasks', Icons.task_alt_rounded),
+      ('Documents', Icons.folder_rounded),
+      ('Invoices', Icons.receipt_long_rounded),
+      ('Payments', Icons.payment_rounded),
+      ('Deadlines', Icons.event_rounded),
+      ('Reports', Icons.bar_chart_rounded),
+    ];
+    
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: modules
+            .map(
+              (m) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colors.warning,
+                  color: colors.bg1,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: colors.glassBorderDim),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(m.$2, size: 14, color: colors.textMuted),
+                    const SizedBox(width: 6),
+                    Text(
+                      m.$1,
+                      style: TextStyle(
+                        color: colors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                'Modules coming soon',
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              'Clients',
-              'Tasks',
-              'Documents',
-              'Invoices',
-              'Payments',
-              'Deadlines',
-              'Notifications',
-              'Reports',
-            ]
-                .map(
-                  (m) => AppBadge(
-                    label: m,
-                    color: colors.textMuted,
-                  ),
-                )
-                .toList(),
-          ),
-        ],
+            )
+            .toList(),
       ),
     );
   }
@@ -486,15 +448,22 @@ class _DashboardPlaceholderScreenState
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.bg2,
-        border: Border(
-          top: BorderSide(color: colors.glassBorderDim),
-        ),
+        color: colors.bg2.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(AppRadius.full),
+        border: Border.all(color: colors.glassBorder),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: context.isDarkMode ? 0.3 : 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          )
+        ],
       ),
       child: SafeArea(
         top: false,
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(items.length, (i) {
@@ -503,50 +472,43 @@ class _DashboardPlaceholderScreenState
               return GestureDetector(
                 onTap: () {
                   if (i == 4) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const ProfileScreen(),
-                      ),
-                    );
+                    context.push(AppRoutes.profile);
                     return;
                   }
                   setState(() => _selectedIndex = i);
                 },
+                behavior: HitTestBehavior.opaque,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
+                    horizontal: 16,
+                    vertical: 10,
                   ),
                   decoration: BoxDecoration(
                     color: selected
                         ? colors.primary.withValues(alpha: 0.12)
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    borderRadius: BorderRadius.circular(AppRadius.full),
                   ),
-                  child: Column(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         item.icon,
-                        size: 20,
-                        color: selected
-                            ? colors.primary
-                            : colors.textMuted,
+                        size: 22,
+                        color: selected ? colors.primary : colors.textMuted,
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: selected
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: selected
-                              ? colors.primary
-                              : colors.textMuted,
+                      if (selected) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          item.label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: colors.primary,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -571,19 +533,6 @@ class _DashboardPlaceholderScreenState
     }
   }
 
-  Color _roleColor(UserRole role) {
-    final colors = context.appColors;
-    switch (role) {
-      case UserRole.superAdmin:
-        return colors.tertiary;
-      case UserRole.ca:
-        return colors.primary;
-      case UserRole.staff:
-        return colors.secondary;
-      case UserRole.client:
-        return colors.warning;
-    }
-  }
 }
 
 class _StatItem {

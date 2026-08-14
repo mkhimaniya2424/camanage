@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/config/app_theme.dart';
+import '../../core/router/app_routes.dart';
 import '../../core/widgets/app_widgets.dart';
 import 'auth_service.dart';
 
@@ -105,7 +107,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     child: Row(
                       children: [
                         IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.login),
                           icon: Icon(Icons.arrow_back_ios_new_rounded, color: colors.textSecondary,
                             size: 18,
                           ),
@@ -198,7 +200,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 40),
         AppPrimaryButton(
           label: 'Back to Sign In',
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go(AppRoutes.login),
           icon: Icons.arrow_back_rounded,
         ),
       ],
@@ -249,7 +251,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 32),
-        GlassCard(
+        AppCard(
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,

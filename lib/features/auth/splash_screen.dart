@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/config/app_theme.dart';
+import '../../core/router/app_routes.dart';
 import '../../core/services/supabase_service.dart';
 import 'auth_service.dart';
-import 'login_screen.dart';
-import '../dashboard/dashboard_placeholder_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -68,77 +68,23 @@ class _SplashScreenState extends State<SplashScreen>
     final isAuthenticated =
         SupabaseService.isInitialized && AuthService.instance.isAuthenticated;
 
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => isAuthenticated
-            ? const DashboardPlaceholderScreen()
-            : const LoginScreen(),
-        transitionsBuilder: (_, animation, __, child) => FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
+    context.go(isAuthenticated ? AppRoutes.dashboard : AppRoutes.login);
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     return Scaffold(
-      backgroundColor: colors.bg0,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [colors.bg0, colors.bg1],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            colors: [colors.bg1, colors.bg0],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
         child: Stack(
           children: [
-            // Ambient glow top-right
-            Positioned(
-              top: -80,
-              right: -80,
-              child: AnimatedBuilder(
-                animation: _glowPulse,
-                builder: (_, __) => Opacity(
-                  opacity: _glowPulse.value * 0.4,
-                  child: Container(
-                    width: 300,
-                    height: 300,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [colors.primary, Colors.transparent],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Ambient glow bottom-left
-            Positioned(
-              bottom: -60,
-              left: -60,
-              child: AnimatedBuilder(
-                animation: _glowPulse,
-                builder: (_, __) => Opacity(
-                  opacity: _glowPulse.value * 0.25,
-                  child: Container(
-                    width: 240,
-                    height: 240,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [colors.tertiary, Colors.transparent],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
             // Center content
             Center(
               child: FadeTransition(
@@ -148,26 +94,45 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Logo container
-                      Container(
-                        width: 88,
-                        height: 88,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [colors.primaryDark, colors.primary],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                      // Pulsing logo container
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          AnimatedBuilder(
+                            animation: _glowPulse,
+                            builder: (_, __) => Container(
+                              width: 100 + (_glowPulse.value * 20),
+                              height: 100 + (_glowPulse.value * 20),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: colors.primary.withValues(alpha: 0.15 * (1 - _glowPulse.value)),
+                              ),
+                            ),
                           ),
-                          borderRadius: BorderRadius.circular(AppRadius.xl),
-                          boxShadow: [BoxShadow(color: colors.primary.withValues(alpha: 0.35), blurRadius: 24, offset: const Offset(0, 8))],
-                        ),
-                        child: Icon(
-                          Icons.account_balance_rounded,
-                          size: 42,
-                          color: Colors.white,
-                        ),
+                          Container(
+                            width: 88,
+                            height: 88,
+                            decoration: BoxDecoration(
+                              color: colors.bg2,
+                              borderRadius: BorderRadius.circular(AppRadius.xl),
+                              border: Border.all(color: colors.glassBorderDim),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: colors.primary.withValues(alpha: 0.2),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 8),
+                                )
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.account_balance_rounded,
+                              size: 42,
+                              color: colors.primary,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       // App name
                       Text(
                         'CA Desk',
@@ -183,7 +148,7 @@ class _SplashScreenState extends State<SplashScreen>
                         'Chartered Accountant Management',
                         style: TextStyle(
                           fontSize: 13,
-                          color: colors.textMuted,
+                          color: colors.textSecondary,
                           letterSpacing: 0.3,
                         ),
                       ),
@@ -214,7 +179,7 @@ class _SplashScreenState extends State<SplashScreen>
                 'v0.1.0',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: colors.textDisabled,
+                  color: colors.textMuted,
                   fontSize: 11,
                 ),
               ),

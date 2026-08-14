@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/config/app_theme.dart';
+import '../../core/router/app_routes.dart';
 import '../../core/widgets/app_widgets.dart';
 import 'auth_service.dart';
-import 'login_screen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -109,7 +110,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       child: Row(
                         children: [
                           IconButton(
-                            onPressed: () => Navigator.of(context).pop(),
+                            onPressed: () => context.canPop()
+                                ? context.pop()
+                                : context.go(AppRoutes.login),
                             icon: Icon(Icons.arrow_back_ios_new_rounded, color: colors.textSecondary,
                               size: 18,
                             ),
@@ -186,10 +189,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         const SizedBox(height: 40),
         AppPrimaryButton(
           label: 'Sign In',
-          onPressed: () => Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
-          ),
+          onPressed: () => context.go(AppRoutes.login),
           icon: Icons.login_rounded,
         ),
       ],
@@ -239,7 +239,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           ),
         ),
         const SizedBox(height: 32),
-        GlassCard(
+        AppCard(
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,

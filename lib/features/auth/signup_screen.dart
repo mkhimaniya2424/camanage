@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/config/app_theme.dart';
+import '../../core/router/app_routes.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../models/profile.dart';
 import 'auth_service.dart';
-import 'login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -163,21 +164,16 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: Row(
                       children: [
                         IconButton(
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: () => context.canPop()
+                              ? context.pop()
+                              : context.go(AppRoutes.login),
                           icon: Icon(Icons.arrow_back_ios_new_rounded, color: colors.textSecondary,
                             size: 18,
                           ),
                         ),
                         const Spacer(),
                         TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (_) => const LoginScreen(),
-                              ),
-                              (r) => false,
-                            );
-                          },
+                          onPressed: () => context.go(AppRoutes.login),
                           child: Text(
                             'Sign in instead',
                             style: TextStyle(
@@ -266,10 +262,7 @@ class _SignupScreenState extends State<SignupScreen> {
         const SizedBox(height: 40),
         AppPrimaryButton(
           label: 'Go to Sign In',
-          onPressed: () => Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (r) => false,
-          ),
+          onPressed: () => context.go(AppRoutes.login),
           icon: Icons.login_rounded,
         ),
       ],
@@ -323,7 +316,7 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
         const SizedBox(height: 28),
         // Form card
-        GlassCard(
+        AppCard(
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,

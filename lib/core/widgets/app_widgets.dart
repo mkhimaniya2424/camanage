@@ -118,12 +118,12 @@ class _AppPrimaryButtonState extends State<AppPrimaryButton>
   }
 }
 
-/// Glass-morphism container
-class GlassCard extends StatelessWidget {
-  const GlassCard({
+/// Adaptive card matching the professional theme
+class AppCard extends StatelessWidget {
+  const AppCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(20),
+    this.padding = const EdgeInsets.all(AppSpacing.md),
     this.borderRadius,
     this.margin,
     this.showBorder = true,
@@ -142,21 +142,32 @@ class GlassCard extends StatelessWidget {
       margin: margin,
       decoration: BoxDecoration(
         color: colors.bg2,
-        borderRadius: BorderRadius.circular(borderRadius ?? AppRadius.lg),
-        border: showBorder ? Border.all(color: colors.glassBorderDim) : null,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          )
-        ],
+        borderRadius: BorderRadius.circular(borderRadius ?? AppRadius.md),
+        border: showBorder && context.isDarkMode
+            ? Border.all(color: colors.glassBorder, width: 1.0)
+            : null,
+        boxShadow: context.isDarkMode
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                )
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03), // very soft native shadow
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                )
+              ],
       ),
       padding: padding,
       child: child,
     );
   }
 }
+
 
 /// Styled text field that matches the theme
 class AppTextField extends StatelessWidget {
@@ -229,7 +240,7 @@ class AppTextField extends StatelessWidget {
 
 /// Error banner shown at top of forms
 class AppErrorBanner extends StatelessWidget {
-  AppErrorBanner({super.key, required this.message});
+  const AppErrorBanner({super.key, required this.message});
   final String message;
 
   @override
@@ -265,7 +276,7 @@ class AppErrorBanner extends StatelessWidget {
 
 /// Small role/status badge chip
 class AppBadge extends StatelessWidget {
-  AppBadge({
+  const AppBadge({
     super.key,
     required this.label,
     this.color,
@@ -299,7 +310,7 @@ class AppBadge extends StatelessWidget {
 
 /// Full-screen error state with retry button
 class AppErrorState extends StatelessWidget {
-  AppErrorState({
+  const AppErrorState({
     super.key,
     required this.message,
     required this.onRetry,
@@ -345,8 +356,8 @@ class AppErrorState extends StatelessWidget {
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: onRetry,
-              icon: Icon(Icons.refresh_rounded, size: 16),
-              label: Text('Try Again'),
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: const Text('Try Again'),
             ),
           ],
         ),
@@ -402,6 +413,171 @@ class AppDivider extends StatelessWidget {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Dashboard & Layout Widgets
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Quick action pill button for dashboard
+class AppQuickAction extends StatelessWidget {
+  const AppQuickAction({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.full),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: context.isDarkMode ? colors.bg3 : colors.bg2,
+            borderRadius: BorderRadius.circular(AppRadius.full),
+            border: Border.all(
+              color: context.isDarkMode
+                  ? colors.glassBorder
+                  : colors.glassBorderDim.withValues(alpha: 0.5),
+              width: 0.5,
+            ),
+            boxShadow: context.isDarkMode
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    )
+                  ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 14, color: colors.primary),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Stat card for dashboard metrics
+class AppStatCard extends StatelessWidget {
+  const AppStatCard({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.icon,
+    this.color,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final effectiveColor = color ?? colors.primary;
+    
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: effectiveColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: effectiveColor, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Header for a dashboard section
+class AppSectionHeader extends StatelessWidget {
+  const AppSectionHeader({
+    super.key,
+    required this.title,
+    this.action,
+  });
+
+  final String title;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
+          ),
+        ),
+        if (action != null) action!,
       ],
     );
   }

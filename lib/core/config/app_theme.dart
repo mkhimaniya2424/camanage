@@ -155,6 +155,16 @@ class AppRadius {
   static const full = 999.0;
 }
 
+class AppSpacing {
+  AppSpacing._();
+  static const xs = 4.0;
+  static const sm = 8.0;
+  static const md = 16.0;
+  static const lg = 24.0;
+  static const xl = 32.0;
+  static const xxl = 48.0;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Theme Definitions
 // ─────────────────────────────────────────────────────────────────────────────
@@ -162,46 +172,47 @@ class AppRadius {
 class AppTheme {
   AppTheme._();
 
-  static const _primary = Color(0xFF6366F1);
-  static const _secondary = Color(0xFF14B8A6);
-  static const _tertiary = Color(0xFFA855F7);
-  static const _error = Color(0xFFEF4444);
+  // ─── New palette: Charcoal Black + Emerald Green + Gold ──────────────────
+  static const _primary   = Color(0xFF00C48C); // Emerald green
+  static const _secondary = Color(0xFFF0B429); // Warm gold
+  static const _tertiary  = Color(0xFF00A3FF); // Electric blue accent
+  static const _error     = Color(0xFFFF5252); // Vivid red
 
   // ---------------------------------------------------------------------------
   // DARK THEME
   // ---------------------------------------------------------------------------
-  static final darkColors = AppThemeExtension(
-    bg0: const Color(0xFF07090F),
-    bg1: const Color(0xFF0D1117),
-    bg2: const Color(0xFF131924),
-    bg3: const Color(0xFF1A2233),
+  static const darkColors = AppThemeExtension(
+    bg0: Color(0xFF080B0F), // Near-black base
+    bg1: Color(0xFF0D1117), // Charcoal scaffold
+    bg2: Color(0xFF161B22), // Card surface
+    bg3: Color(0xFF21262D), // Input / elevated
     primary: _primary,
-    primaryLight: const Color(0xFF818CF8),
-    primaryDark: const Color(0xFF4F46E5),
+    primaryLight: Color(0xFF4DFFC9),  // Light emerald
+    primaryDark: Color(0xFF00875F),   // Deep emerald
     secondary: _secondary,
     tertiary: _tertiary,
-    glass: const Color(0x1AFFFFFF),
-    glassBorder: const Color(0x26FFFFFF),
-    glassBorderDim: const Color(0x0DFFFFFF),
-    textPrimary: const Color(0xFFF1F5F9),
-    textSecondary: const Color(0xFF94A3B8),
-    textMuted: const Color(0xFF475569),
-    textDisabled: const Color(0xFF334155),
-    success: const Color(0xFF10B981),
-    warning: const Color(0xFFF59E0B),
+    glass: Color(0x1AFFFFFF),
+    glassBorder: Color(0xFF30363D),
+    glassBorderDim: Color(0xFF21262D),
+    textPrimary: Color(0xFFF0F6FC),
+    textSecondary: Color(0xFF8B949E),
+    textMuted: Color(0xFF6E7681),
+    textDisabled: Color(0xFF484F58),
+    success: Color(0xFF00C48C),
+    warning: Color(0xFFF0B429),
     error: _error,
-    errorDark: const Color(0xFF7F1D1D),
-    errorBg: const Color(0x1AEF4444),
+    errorDark: Color(0xFF8B0000),
+    errorBg: Color(0x1AFF5252),
   );
 
   static ThemeData get dark {
-    final colors = darkColors;
+    const colors = darkColors;
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: colors.bg1,
       fontFamily: 'Inter',
-      extensions: [colors],
+      extensions: const [colors],
       colorScheme: ColorScheme.dark(
         brightness: Brightness.dark,
         primary: colors.primary,
@@ -259,6 +270,7 @@ class AppTheme {
       listTileTheme: ListTileThemeData(
         iconColor: colors.textSecondary,
         textColor: colors.textPrimary,
+        tileColor: Colors.transparent,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       ),
     );
@@ -267,38 +279,38 @@ class AppTheme {
   // ---------------------------------------------------------------------------
   // LIGHT THEME
   // ---------------------------------------------------------------------------
-  static final _lightColors = AppThemeExtension(
-    bg0: const Color(0xFFF1F5F9), // Slate 100
-    bg1: const Color(0xFFF8FAFC), // Slate 50
-    bg2: const Color(0xFFFFFFFF), // White
-    bg3: const Color(0xFFF1F5F9), // elevated card / input bg (Slate 100)
+  static const _lightColors = AppThemeExtension(
+    bg0: Color(0xFFF6F8FA), // GitHub-light near-white
+    bg1: Color(0xFFF2F2F7), // Apple native grouped background
+    bg2: Color(0xFFFFFFFF), // Pure white Card
+    bg3: Color(0xFFF1F3F5), // Input fill
     primary: _primary,
-    primaryLight: const Color(0xFF818CF8),
-    primaryDark: const Color(0xFF4F46E5),
+    primaryLight: Color(0xFF26D9A8),
+    primaryDark: Color(0xFF00875F),
     secondary: _secondary,
     tertiary: _tertiary,
-    glass: const Color(0x0D000000), // 5% black
-    glassBorder: const Color(0x1A000000), // 10% black border
-    glassBorderDim: const Color(0x08000000), // 3% black border (dim)
-    textPrimary: const Color(0xFF0F172A), // Slate 900
-    textSecondary: const Color(0xFF475569), // Slate 600
-    textMuted: const Color(0xFF94A3B8), // Slate 400
-    textDisabled: const Color(0xFFCBD5E1), // Slate 300
-    success: const Color(0xFF10B981),
-    warning: const Color(0xFFF59E0B),
-    error: _error,
-    errorDark: const Color(0xFF991B1B), // Red 800
-    errorBg: const Color(0x1AEF4444),
+    glass: Color(0xFFF6F8FA),
+    glassBorder: Color(0xFFCBD5E1),
+    glassBorderDim: Color(0xFFE2E8F0),
+    textPrimary: Color(0xFF1F2328),
+    textSecondary: Color(0xFF656D76),
+    textMuted: Color(0xFF848D97),
+    textDisabled: Color(0xFFB1BAC4),
+    success: Color(0xFF1A7F37),
+    warning: Color(0xFF9A6700),
+    error: Color(0xFFCF222E),
+    errorDark: Color(0xFF82071E),
+    errorBg: Color(0xFFFFEBE9),
   );
 
   static ThemeData get light {
-    final colors = _lightColors;
+    const colors = _lightColors;
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       scaffoldBackgroundColor: colors.bg1,
       fontFamily: 'Inter',
-      extensions: [colors],
+      extensions: const [colors],
       colorScheme: ColorScheme.light(
         brightness: Brightness.light,
         primary: colors.primary,
@@ -314,10 +326,11 @@ class AppTheme {
         outline: colors.glassBorder,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: colors.bg1,
+        backgroundColor: colors.bg2,           // white app bar in light mode
         foregroundColor: colors.textPrimary,
         elevation: 0,
-        scrolledUnderElevation: 0,
+        scrolledUnderElevation: 1,
+        shadowColor: const Color(0x14000000),
         surfaceTintColor: Colors.transparent,
         systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarBrightness: Brightness.light,
@@ -337,17 +350,17 @@ class AppTheme {
       filledButtonTheme: _buildFilledButtonTheme(colors),
       outlinedButtonTheme: _buildOutlinedButtonTheme(colors),
       textButtonTheme: _buildTextButtonTheme(colors),
-      snackBarTheme: _buildSnackBarTheme(colors),
+      snackBarTheme: _buildLightSnackBarTheme(),
       dialogTheme: _buildDialogTheme(colors),
       cardTheme: _buildCardTheme(colors),
       dividerTheme: DividerThemeData(
-        color: colors.glassBorderDim,
+        color: colors.glassBorder,   // stronger visible border in light mode
         thickness: 1,
         space: 1,
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: colors.primary,
-        linearTrackColor: colors.bg3,
+        linearTrackColor: colors.glassBorder,
       ),
       iconTheme: IconThemeData(
         color: colors.textSecondary,
@@ -356,7 +369,15 @@ class AppTheme {
       listTileTheme: ListTileThemeData(
         iconColor: colors.textSecondary,
         textColor: colors.textPrimary,
+        tileColor: Colors.transparent,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: Color(0xFFFFFFFF),
+        selectedItemColor: Color(0xFF00C48C),   // Emerald
+        unselectedItemColor: Color(0xFF848D97),
+        elevation: 1,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
@@ -500,7 +521,7 @@ class AppTheme {
   static TextButtonThemeData _buildTextButtonTheme(AppThemeExtension colors) {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: colors.primaryLight,
+        foregroundColor: colors.primary,
         textStyle: const TextStyle(
           fontFamily: 'Inter',
           fontSize: 14,
@@ -520,9 +541,26 @@ class AppTheme {
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        side: BorderSide(color: colors.glassBorder),
       ),
       behavior: SnackBarBehavior.floating,
+    );
+  }
+
+  /// Light mode SnackBar uses dark bg for contrast on white screens
+  static SnackBarThemeData _buildLightSnackBarTheme() {
+    return SnackBarThemeData(
+      backgroundColor: const Color(0xFF1E293B), // Slate 800
+      contentTextStyle: const TextStyle(
+        fontFamily: 'Inter',
+        color: Color(0xFFF1F5F9),
+        fontSize: 14,
+      ),
+      actionTextColor: const Color(0xFF818CF8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      behavior: SnackBarBehavior.floating,
+      elevation: 4,
     );
   }
 
@@ -564,4 +602,6 @@ class AppTheme {
 extension AppThemeContextExtension on BuildContext {
   AppThemeExtension get appColors =>
       Theme.of(this).extension<AppThemeExtension>() ?? AppTheme.darkColors;
+
+  bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
 }

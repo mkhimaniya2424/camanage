@@ -38,7 +38,13 @@ class ProfileService {
           .eq('auth_user_id', authUserId)
           .single();
       return Profile.fromMap(row);
-    } on PostgrestException {
+    } on PostgrestException catch (e) {
+      // ignore: avoid_print
+      print(
+        '[ProfileService.getCurrentProfile] PostgrestException '
+        'code=${e.code} message=${e.message} details=${e.details} '
+        'hint=${e.hint} authUserId=$authUserId',
+      );
       throw const AppFailure('Unable to load your profile. Please try again.');
     }
   }
@@ -74,7 +80,13 @@ class ProfileService {
           .select()
           .single();
       return Profile.fromMap(row);
-    } on PostgrestException {
+    } on PostgrestException catch (e) {
+      // ignore: avoid_print
+      print(
+        '[ProfileService.updateProfile] PostgrestException '
+        'code=${e.code} message=${e.message} details=${e.details} '
+        'hint=${e.hint} authUserId=$authUserId updates=$updates',
+      );
       throw const AppFailure('Unable to update your profile. Please try again.');
     }
   }
@@ -115,7 +127,12 @@ class ProfileService {
             ),
           );
       onProgress?.call(1.0);
-    } on StorageException {
+    } on StorageException catch (e) {
+      // ignore: avoid_print
+      print(
+        '[ProfileService.uploadProfileImage] StorageException '
+        'message=${e.message} statusCode=${e.statusCode} path=$path',
+      );
       throw const AppFailure('Image upload failed. Please try again.');
     }
 
@@ -127,7 +144,13 @@ class ProfileService {
           .select()
           .single();
       return Profile.fromMap(row);
-    } on PostgrestException {
+    } on PostgrestException catch (e) {
+      // ignore: avoid_print
+      print(
+        '[ProfileService.uploadProfileImage] PostgrestException (saving path) '
+        'code=${e.code} message=${e.message} details=${e.details} '
+        'hint=${e.hint} profileId=${profile.id} path=$path',
+      );
       throw const AppFailure(
         'Image uploaded, but we could not save it to your profile. Please try again.',
       );
